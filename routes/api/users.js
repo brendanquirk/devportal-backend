@@ -3,6 +3,8 @@ const router = express.Router();
 const { check, validationResult } = require('express-validator/check');
 const gravatar = require('gravatar');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const config = require('config');
 const User = require('../../models/Users')
 
 //@route POST api/users
@@ -25,7 +27,7 @@ async (req, res) => {
     let user = await User.findOne({ email });
 
     if(user){
-      res.status(400).json({ errors: [{ msg: 'User already exists' }]});
+      return res.status(400).json({ errors: [{ msg: 'User already exists' }]});
     }
 
     const avatar = gravatar.url(email, {
@@ -34,6 +36,7 @@ async (req, res) => {
       d: 'mm'
     })
 
+//Create new user
     user = new User({
       name,
       email,
@@ -41,27 +44,37 @@ async (req, res) => {
       password
     });
 
+//Hash password
     const salt = await bcrypt.genSalt(10);
 
     user.password = await bcrypt.hash(password, salt);
 
+//Save user
     await user.save();
-    // See if user exists
 
-    // Get users gravatar
+    //Get payload
+      const payload = {
+        user: {
+          id: user.id
+        }
+      }
 
-    // Encrypt password using bcrypt
+    //Sign token, pass in token and secret, throws error or gets token
+      jwt.sign(
+        payload,
+        config.get('jwtSecret'),
+        {expiresIn: 360000},
+        (err, token) => {
+          if(err) throw err;
+          res.json({ token });
+        }
+      );
 
-    // Return jsonwebtoken
-    res.send('User registered');
   } catch(err) {
     console.error(err.message);
     res.status(500).send('Server error');
   }
 
-
-
-  res.send('User route')
 });
 
 module.exports = router;

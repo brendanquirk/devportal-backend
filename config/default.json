@@ -1,3 +1,4 @@
 {
-  "mongoURI": "mongodb+srv://qui1217:Soccer06@devportal-jh4hc.mongodb.net/test?retryWrites=true"
+  "mongoURI": "mongodb+srv://qui1217:Soccer06@devportal-jh4hc.mongodb.net/test?retryWrites=true",
+  "jwtSecret": "thisisasecret"
 }
